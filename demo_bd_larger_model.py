@@ -147,43 +147,74 @@ def LeNet(x, KEEP_PROB):
     # Pooling. Input = 16x16x128. Output = 8x8x128.
     pool2 = tf.nn.max_pool(conv2, [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
        
-    # # Layer 3: Input = 6x6x128. Output = 13x13x16.
-    # # Convolutional. 
-    # conv2_w = tf.Variable(tf.truncated_normal((3, 3, 6, 16), mu, sigma))
-    # conv2_b = tf.Variable(tf.zeros(16))
-    # conv2 = tf.nn.conv2d(pool1, conv2_w, [1, 1, 1, 1], 'SAME') + conv2_b
-    # # Activation.
-    # conv2 = tf.nn.relu(conv2)
-    # # Pooling. Input = 10x10x16. Output = 5x5x16.
-    # pool2 = tf.nn.max_pool(conv2, [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
-      
-    # Flatten. Input = 5x5x16. Output = 400.
-    flat = flatten(pool2)   
+    # Layer 3: Input = 8x8x128. Output = 8x8x256.
+    # Convolutional. 
+    conv3_w = tf.Variable(tf.truncated_normal((3, 3, 128, 256), mu, sigma))
+    conv3_b = tf.Variable(tf.zeros(256))
+    conv3 = tf.nn.conv2d(pool2, conv3_w, [1, 1, 1, 1], 'SAME') + conv3_b
+    # Activation.
+    conv3 = tf.nn.relu(conv3)
+    # Layer 4: Input = 8x8x256. Output = 8x8x256.
+    # Convolutional. 
+    conv4_w = tf.Variable(tf.truncated_normal((3, 3, 256, 256), mu, sigma))
+    conv4_b = tf.Variable(tf.zeros(256))
+    conv4 = tf.nn.conv2d(pool2, conv4_w, [1, 1, 1, 1], 'SAME') + conv4_b
+    # Activation.
+    conv4 = tf.nn.relu(conv4)
+    # Pooling. Input = 8x8x256. Output = 4x4x256.
+    pool3 = tf.nn.max_pool(conv4, [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
     
-    # Layer 3: Input = 400. Output = 120.
+    # Layer 5: Input = 4x4x256. Output = 4x4x512.
+    # Convolutional. 
+    conv5_w = tf.Variable(tf.truncated_normal((3, 3, 256, 512), mu, sigma))
+    conv5_b = tf.Variable(tf.zeros(512))
+    conv5 = tf.nn.conv2d(pool3, conv5_w, [1, 1, 1, 1], 'SAME') + conv5_b
+    # Activation.
+    conv5 = tf.nn.relu(conv5)
+    # Layer 6: Input = 4x4x512. Output = 4x4x512.
+    # Convolutional. 
+    conv6_w = tf.Variable(tf.truncated_normal((3, 3, 512, 512), mu, sigma))
+    conv6_b = tf.Variable(tf.zeros(512))
+    conv6 = tf.nn.conv2d(pool3, conv6_w, [1, 1, 1, 1], 'SAME') + conv6_b
+    # Activation.
+    conv6 = tf.nn.relu(conv6)
+    # Pooling. Input = 4x4x512. Output = 2x2x512.
+    pool4 = tf.nn.max_pool(conv6, [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
+    
+
+    # Flatten. Input = 2x2x512. Output = 2048.
+    flat = flatten(pool4)   
+    
+    # Layer 7: Input = 2048. Output = 4096.
     # Fully Connected. 
-    full1_w = tf.Variable(tf.truncated_normal((8192, 120), mu, sigma))
-    full1_b = tf.Variable(tf.zeros(120))
+    full1_w = tf.Variable(tf.truncated_normal((2048, 4096), mu, sigma))
+    full1_b = tf.Variable(tf.zeros(4096))
     full1 = tf.matmul(flat, full1_w) + full1_b
     # Activation.
     full1 = tf.nn.relu(full1) 
-    # Dropout
-    full1 = tf.nn.dropout(full1, KEEP_PROB)
-    
-    # Layer 4: Input = 120. Output = 84.
+
+    # Layer 8: Input = 4096. Output = 4096.
     # Fully Connected. 
-    full2_w = tf.Variable(tf.truncated_normal((120, 84), mu, sigma))
-    full2_b = tf.Variable(tf.zeros(84))
+    full2_w = tf.Variable(tf.truncated_normal((2048, 4096), mu, sigma))
+    full2_b = tf.Variable(tf.zeros(4096))
     full2 = tf.matmul(full1, full2_w) + full2_b
     # Activation.
-    full2 = tf.nn.relu(full2)
+    full2 = tf.nn.relu(full2) 
+
+    # Layer 9: Input = 4096. Output = 1000.
+    # Fully Connected. 
+    full3_w = tf.Variable(tf.truncated_normal((4096, 1000), mu, sigma))
+    full3_b = tf.Variable(tf.zeros(1000))
+    full3 = tf.matmul(full2, full3_w) + full3_b
+    # Activation.
+    full3 = tf.nn.relu(full3) 
     # Dropout
-    full2 = tf.nn.dropout(full2, KEEP_PROB)
+    # full1 = tf.nn.dropout(full1, KEEP_PROB)
     
-    # Layer 5: Fully Connected. Input = 84. Output = 43.
-    full3_w = tf.Variable(tf.truncated_normal((84, class_num), mu, sigma))
-    full3_b = tf.Variable(tf.zeros(class_num))
-    logits = tf.matmul(full2, full3_w) + full3_b
+    # Layer 5: Fully Connected. Input = 1000. Output = 3.
+    full4_w = tf.Variable(tf.truncated_normal((1000, class_num), mu, sigma))
+    full4_b = tf.Variable(tf.zeros(class_num))
+    logits = tf.matmul(full3, full4_w) + full4_b
     
     return logits
 
